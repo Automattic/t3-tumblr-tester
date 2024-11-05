@@ -1,0 +1,13 @@
+{
+   "watch": [
+      "index.js",
+      "routes/",
+      "middleware/"
+   ],
+   "ext": "js,json",
+   "ignore": [
+      "public/*",
+      "node_modules/*"
+   ],
+   "delay": "500"
+}
