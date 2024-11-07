@@ -13,46 +13,60 @@ const readFile = (filename) => {
    return content;
 };
 
-export const generateBlueprint = (consumer, siteName, backgroundColor, avatar, linkColor, titleColor, headerImage, blogDescription) => ({
-   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
-   "preferredVersions": {
-      "php": "8.3",
-      "wp": "6.6"
-   },
-   "features": {
-      "networking": true
-   },
-   "landingPage": "/",
-   "login": true,
-   "steps": [
-      {
-         "step": "installPlugin",
-         "pluginData": {
-            "resource": "url",
-            "url": "https://github-proxy.com/proxy/?repo=Automattic/tumblr-theme-translator&release=v0.1.1-alpha&asset=tumblr-theme-translator.zip"
-         }
+export const generateBlueprint = (consumer, blogData, themeHtml, defaultParams) => {
+   return {
+      "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+      "preferredVersions": {
+         "php": "8.3",
+         "wp": "latest"
       },
-      {
-         "step": "login",
-         "username": "admin",
-         "password": "password"
+      "features": {
+         "networking": true
       },
-      {
-         "step": "wp-cli",
-         "command": `wp media import '${avatar}' --porcelain`
-      },
-      {
-         "step": "runPHP",
-         "code": `<?php
+      "landingPage": "/",
+      "login": true,
+      "steps": [
+         {
+            "step": "mkdir",
+            "path": "wordpress/wp-content/mu-plugins"
+         },
+         {
+            "step": "writeFile",
+            "path": "wordpress/wp-content/mu-plugins/addFilter-0.php",
+            "data": "<?php add_action( 'requests-requests.before_request', function( &$url ) {\n$url = 'https://playground.wordpress.net/cors-proxy.php?' . $url;\n} );"
+         },
+         {
+            "step": "installPlugin",
+            "pluginData": {
+               "resource": "url",
+               "url": "https://github-proxy.com/proxy/?repo=Automattic/tumblr-theme-translator&release=v0.1.3&asset=tumblr-theme-translator.zip"
+            }
+         },
+         {
+            "step": "login",
+            "username": "admin",
+            "password": "password"
+         },
+         {
+            "step": "setSiteOptions",
+            "options": {
+               "template": "tumblr3",
+               "stylesheet": "tumblr3"
+            }
+         },
+         {
+            "step": "wp-cli",
+            "command": `wp media import '${blogData.avatar?.[3]?.url}' --porcelain`
+         },
+         {
+            "step": "runPHP",
+            "code": `<?php
                 $consumer = '${consumer.key}';
-                $siteName = '${siteName}';
-                $backgroundColor = '${backgroundColor}';
-                $avatar = '${avatar}';
-                $linkColor = '${linkColor}';
-                $titleColor = '${titleColor}';
-                $headerImage = '${headerImage}';
-                $blogDescription = '${blogDescription}';
-
+                $blogData = json_decode('${JSON.stringify(blogData)}', true);
+                $defaultParams = json_decode('${JSON.stringify(defaultParams)}', true);
+                $themeHtml = <<<'EOD'
+${themeHtml}
+EOD;
                 require_once '/wordpress/wp-load.php';
 
                 define('WP_DEBUG', true);
@@ -62,12 +76,7 @@ export const generateBlueprint = (consumer, siteName, backgroundColor, avatar, l
                 ${readFile('clear_posts.php')}
                 ${readFile('load_posts.php')}
             `
-      },
-      {
-         "step": "setSiteOptions",
-         "options": {
-            "tumblr3_theme_html": `${readFile('vision.html')}`
-         }
-      },
-   ]
-});
+         },
+      ]
+   };
+};

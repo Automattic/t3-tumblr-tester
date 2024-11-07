@@ -13,6 +13,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
+const THEME_GARDEN_ENDPOINT = 'https://www.tumblr.com/api/v2/theme_garden';
+
+app.use(express.json({ limit: '50mb' }));
 
 // Tumblr OAuth setup
 const oauth = OAuth({
@@ -26,7 +29,6 @@ const oauth = OAuth({
 let requestToken = '';
 let requestTokenSecret = '';
 
-// Step 1: Request Token Route
 app.get('/auth/tumblr', async (req, res) => {
    const request_data = {
       url: 'https://www.tumblr.com/oauth/request_token',
@@ -37,7 +39,6 @@ app.get('/auth/tumblr', async (req, res) => {
       const headers = oauth.toHeader(oauth.authorize(request_data));
       const response = await axios.post(request_data.url, {}, { headers });
 
-      // Parse the response
       const tokenData = new URLSearchParams(response.data);
       requestToken = tokenData.get('oauth_token');
       requestTokenSecret = tokenData.get('oauth_token_secret');
@@ -45,7 +46,6 @@ app.get('/auth/tumblr', async (req, res) => {
       console.log('Request Token:', requestToken);
       console.log('Request Token Secret:', requestTokenSecret);
 
-      // Step 2: Redirect the user to Tumblr's authorization page
       res.redirect(`https://www.tumblr.com/oauth/authorize?oauth_token=${requestToken}`);
    } catch (error) {
       console.error('Error:', error);
@@ -53,7 +53,6 @@ app.get('/auth/tumblr', async (req, res) => {
    }
 });
 
-// Step 3: Callback URL Route (after user authorizes the app)
 app.get('/callback', async (req, res) => {
    const { oauth_token, oauth_verifier } = req.query;
 
@@ -64,42 +63,75 @@ app.get('/callback', async (req, res) => {
       return res.send('Missing oauth_token or oauth_verifier');
    }
 
-   // Step 4: Exchange Request Token for Access Token
    const request_data = {
       url: 'https://www.tumblr.com/oauth/access_token',
       method: 'POST',
    };
 
    const token = {
-      key: oauth_token, // The token returned by Tumblr
-      secret: requestTokenSecret, // The secret from step 1
+      key: oauth_token,
+      secret: requestTokenSecret,
    };
 
    try {
-      // Generate the signature using the oauth_verifier
       const headers = oauth.toHeader(oauth.authorize({
          url: request_data.url,
          method: 'POST',
-         data: { oauth_verifier }, // Pass oauth_verifier here for signing
+         data: { oauth_verifier },
       }, token));
 
-      // Make the request to exchange the Request Token and Verifier for an Access Token
       const response = await axios.post(request_data.url, {}, {
          headers: {
             ...headers,
             'Content-Type': 'application/x-www-form-urlencoded',
          },
          params: {
-            oauth_verifier, // Include oauth_verifier here as well
+            oauth_verifier,
          }
       });
 
-      // Log the access token response
       console.log('Access Token Response:', response.data);
       res.send(`Access token response: ${response.data}`);
    } catch (error) {
       console.error('Error:', error.response ? error.response.data : error.message);
       res.send('Failed to get access token.');
+   }
+});
+
+app.get('/custom-theme', async (req, res) => {
+   console.log('Custom theme request');
+   const blogIdentifier = req.query.blog;
+
+   if (!blogIdentifier) {
+      return res.status(400).json({ error: 'Blog identifier is required' });
+   }
+
+   const request_data = {
+      url: `https://aaronjbap.dca.tumblr.net/v2/blog/${blogIdentifier}/custom_theme`,
+      method: 'GET',
+   };
+
+   const token = secrets.access;
+
+   const headers = oauth.toHeader(oauth.authorize(request_data, token));
+
+   try {
+      const response = await axios.get(request_data.url, {
+         headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+         },
+      });
+
+      console.log('Custom theme data:', response.data);
+
+      res.json(response.data);
+   } catch (error) {
+      console.error('Error:', error.response ? error.response.data : error.message);
+      res.status(500).json({
+         error: 'Failed to fetch custom theme',
+         details: error.response ? error.response.data : error.message
+      });
    }
 });
 
@@ -127,25 +159,9 @@ app.get('/info', async (req, res) => {
          },
       });
 
-      // Add header image to logging
-      console.log('Theme data:', response.data.response.blog.theme);
-      console.log('Avatar:', response.data.response.blog.avatar);
-      console.log('Description:', response.data.response.blog.description);
-      console.log('Background color:', response.data.response.blog.theme.background_color);
-      console.log('Link color:', response.data.response.blog.theme.link_color);
-      console.log('Title color:', response.data.response.blog.theme.title_color);
-      console.log('Header image:', response.data.response.blog.theme.header_image);
+      console.log('Response data:', response.data.response);
 
-      const themeData = {
-         backgroundColor: response.data.response.blog.theme.background_color,
-         linkColor: response.data.response.blog.theme.link_color,
-         titleColor: response.data.response.blog.theme.title_color,
-         headerImage: response.data.response.blog.theme.header_image,
-         avatar: response.data.response.blog.avatar[3].url,
-         blogDescription: response.data.response.blog.description,
-      };
-
-      res.json(themeData);
+      res.json(response.data.response);
    } catch (error) {
       console.error('Error:', error.response ? error.response.data : error.message);
       res.status(500).json({
@@ -155,27 +171,111 @@ app.get('/info', async (req, res) => {
    }
 });
 
-// Add this near the top of the file, after creating the app
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Modify the root route to serve the HTML file
 app.get('/', (req, res) => {
    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Add this after app.use(express.static...)
-app.get('/test-css', (req, res) => {
-   res.sendFile(path.join(__dirname, 'public', 'styles.css'));
-});
+app.use(express.json());
 
-// Add this new endpoint
-app.get('/blueprint', (req, res) => {
-   const { siteName, backgroundColor, avatar, linkColor, titleColor, headerImage, blogDescription } = req.query;
-   const blueprint = generateBlueprint(secrets.consumer, siteName, backgroundColor, avatar, linkColor, titleColor, headerImage, blogDescription);
+app.post('/blueprint', (req, res) => {
+   const { blogData, theme, themeHtml, defaultParams } = req.body;
+   const blueprint = generateBlueprint(
+      secrets.consumer,
+      blogData,
+      themeHtml,
+      defaultParams
+   );
    res.json(blueprint);
 });
 
-// Modify the server startup
+app.get('/themes', async (req, res) => {
+   const searchTerm = req.query.search || '';
+   const url = searchTerm
+      ? `${THEME_GARDEN_ENDPOINT}?search=${encodeURIComponent(searchTerm)}`
+      : THEME_GARDEN_ENDPOINT;
+
+   try {
+      const response = await axios.get(url);
+      const themes = response.data.response.themes;
+
+      const formattedThemes = themes.map(theme => ({
+         id: theme.id,
+         title: theme.title,
+         isOfficial: theme.title === 'Tumblr Official'
+      }));
+
+      res.json(formattedThemes);
+   } catch (error) {
+      console.error('Error fetching themes:', error);
+      res.status(500).json({
+         error: 'Failed to fetch themes',
+         details: error.response ? error.response.data : error.message
+      });
+   }
+});
+
+app.get('/theme/:themeId', async (req, res) => {
+   try {
+      const response = await axios.get(`${THEME_GARDEN_ENDPOINT}/theme/${req.params.themeId}?time=${Date.now()}`);
+      const themeData = response.data.response;
+
+      if (!themeData.theme) {
+         return res.status(404).json({ error: 'Theme not found' });
+      }
+
+      res.json({
+         theme: themeData.theme,
+         defaultParams: themeData.default_params,
+         title: themeData.title,
+         thumbnail: themeData.thumbnail,
+         author: themeData.author
+      });
+   } catch (error) {
+      console.error('Error fetching theme:', error);
+      res.status(500).json({
+         error: 'Failed to fetch theme',
+         details: error.response ? error.response.data : error.message
+      });
+   }
+});
+
+async function searchThemes(event) {
+   const searchTerm = event.target.value.trim();
+   const themeSelect = document.getElementById('themeSelect');
+
+   if (searchTerm.length === 0) {
+      // If search term is empty, repopulate with default themes
+      return populateThemeDropdown();
+   }
+
+   try {
+      const response = await fetch(`/themes?search=${encodeURIComponent(searchTerm)}`);
+      const themes = await response.json();
+
+      themeSelect.innerHTML = '';
+
+      themes.forEach(theme => {
+         const option = document.createElement('option');
+         option.value = theme.id;
+         option.textContent = theme.title;
+         themeSelect.appendChild(option);
+      });
+
+      if (themeSelect.options.length > 0) {
+         themeSelect.options[0].selected = true;
+      }
+   } catch (error) {
+      console.error('Error searching themes:', error);
+      const errorOption = document.createElement('option');
+      errorOption.value = "";
+      errorOption.textContent = "Error searching themes";
+      themeSelect.innerHTML = '';
+      themeSelect.appendChild(errorOption);
+   }
+}
+
 const PORT = 3000;
 const server = app.listen(PORT, () => {
    console.log(`App is running on http://localhost:${PORT}`);

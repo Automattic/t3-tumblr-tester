@@ -4,138 +4,31 @@
 <head>
    <meta charset="UTF-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>T3 Tester</title>
+   <title>Tumblrpress flavoured cupcake</title>
    <link rel="stylesheet" href="normalize.css">
    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
    <div class="top-content">
-      <!-- <h1>T3 Tester</h1> -->
-      <!-- <a href="/auth/tumblr"><button>Authenticate with Tumblr</button></a> -->
-
       <form class="blog-form" onsubmit="fetchCustomTheme(event)">
-         <input type="text" id="blogIdentifier" placeholder="Tumblr Blog Name" required>
+         <div class="input-group">
+            <input type="text" id="blogIdentifier" placeholder="Tumblr Blog Name" value="staff" required>
+            <input type="text" id="themeSearch" placeholder="Search themes..." onkeypress="handleSearchKeyPress(event)">
+            <div class="theme-select-container">
+               <select id="themeSelect">
+                  <option value="">Loading themes...</option>
+               </select>
+            </div>
+         </div>
          <button type="submit">Switch Blog</button>
       </form>
    </div>
 
    <iframe id="wp"></iframe>
 
-   <script>
-      let currentBlogId = 'staff'; // Default value
-      let currentBackgroundColor = '#FFFFFF'; // Default background color
-      let currentLinkColor = '#0066cc'; // Default link color
-      let currentTitleColor = '#000000'; // Default title color
-      let currentHeaderImage = ''; // Default empty header image
-      let currentAvatar = '';
-      let currentBlogDescription = '';
-      // Fetch theme on page load
-      async function fetchInitialTheme() {
-         try {
-            const response = await fetch(`/info?blog=${currentBlogId}`);
-            const data = await response.json();
-
-            currentBackgroundColor = data.backgroundColor || '';
-            console.log('Initial theme background color:', currentBackgroundColor);
-
-            currentAvatar = data.avatar || '';
-            console.log('Initial theme avatar:', currentAvatar);
-
-            currentLinkColor = data.linkColor || '';
-            console.log('Initial theme link color:', currentLinkColor);
-
-            currentTitleColor = data.titleColor || '';
-            console.log('Initial theme title color:', currentTitleColor);
-
-            currentHeaderImage = data.headerImage || '';
-            console.log('Initial theme header image:', currentHeaderImage);
-
-            currentBlogDescription = data.blogDescription || '';
-            console.log('Initial theme blog description:', currentBlogDescription);
-
-            // Initialize playground with the fetched theme
-            initPlayground();
-         } catch (error) {
-            console.error('Error fetching initial theme:', error);
-            // Initialize playground anyway with default values
-            initPlayground();
-         }
-      }
-
-      async function fetchCustomTheme(event) {
-         event.preventDefault();
-         const blogId = document.getElementById('blogIdentifier').value;
-         currentBlogId = blogId;
-
-         try {
-            const response = await fetch(`/info?blog=${blogId}`);
-            const data = await response.json();
-
-            currentBackgroundColor = data.backgroundColor || '';
-            console.log('Theme background color:', currentBackgroundColor);
-
-            currentAvatar = data.avatar || '';
-            console.log('Theme avatar:', currentAvatar);
-
-            currentLinkColor = data.linkColor || '';
-            console.log('Theme link color:', currentLinkColor);
-
-            currentTitleColor = data.titleColor || '';
-            console.log('Theme title color:', currentTitleColor);
-
-            currentHeaderImage = data.headerImage || '';
-            console.log('Theme header image:', currentHeaderImage);
-
-            currentBlogDescription = data.blogDescription || '';
-            console.log('Theme blog description:', currentBlogDescription);
-
-            // Now initialize the playground with all parameters
-            initPlayground();
-         } catch (error) {
-            console.error('Error fetching theme:', error);
-            // Initialize playground anyway with default values
-            initPlayground();
-         }
-      }
-   </script>
-   <script type="module">
-      async function getBlueprint(siteName, backgroundColor, avatar, linkColor, titleColor, headerImage, blogDescription) {
-         const response = await fetch(`/blueprint?siteName=${encodeURIComponent(siteName)}&backgroundColor=${encodeURIComponent(backgroundColor)}&avatar=${encodeURIComponent(avatar)}&linkColor=${encodeURIComponent(linkColor)}&titleColor=${encodeURIComponent(titleColor)}&headerImage=${encodeURIComponent(headerImage)}&blogDescription=${encodeURIComponent(blogDescription)}`);
-         return await response.json();
-      }
-
-      window.initPlayground = async function () {
-         try {
-            const { startPlaygroundWeb } = await import('https://playground.wordpress.net/client/index.js');
-
-            console.log('Initializing playground with:', {
-               siteName: currentBlogId,
-               backgroundColor: currentBackgroundColor,
-               avatar: currentAvatar,
-               linkColor: currentLinkColor,
-               titleColor: currentTitleColor,
-               headerImage: currentHeaderImage,
-               blogDescription: currentBlogDescription
-            });
-
-            const blueprintData = await getBlueprint(currentBlogId, currentBackgroundColor, currentAvatar, currentLinkColor, currentTitleColor, currentHeaderImage, currentBlogDescription);
-
-            const client = await startPlaygroundWeb({
-               iframe: document.getElementById('wp'),
-               remoteUrl: 'https://playground.wordpress.net/remote.html',
-               blueprint: blueprintData,
-            });
-
-            await client.isReady();
-         } catch (error) {
-            console.error('Error initializing playground:', error);
-         }
-      }
-
-      // Call fetchInitialTheme instead of initPlayground directly
-      fetchInitialTheme();
-   </script>
+   <script src="theme.js"></script>
+   <script type="module" src="playground.js"></script>
 </body>
 
 </html>

@@ -1,8 +1,6 @@
 
-Pull custom html from Tumblr - awaiting endpoint
-Sometimes it does not load when switching themes
-Column width looks broken
-Add pages?
+Bugs:
+Sometimes it does not load when switching theme
 
 Playwright:
 - Goes to tumblr test blog which includes test content
@@ -12,5 +10,9 @@ Playwright:
 - Takes screenshot and compares
 - Produces test results
 
+Issues:
+The Tumblr API does not have all data, we cannot completetly hydrate WP from it.
+
 Future:
 Could use redvelvet converter rather than rendering as legacy
+Could use Tumblr Importer plugin instead of custom import for post content
