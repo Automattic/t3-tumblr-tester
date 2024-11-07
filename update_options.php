@@ -1,8 +1,6 @@
 <?php
 require '/wordpress/wp-load.php';
 
-
-
 // Define mapping between WordPress options and Tumblr data
 $options_mapping = [
    'blogname' => ['name', ''],
