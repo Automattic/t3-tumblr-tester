@@ -7,14 +7,14 @@ define('WP_DEBUG_LOG', true);
 
 $url = 'https://api.tumblr.com/v2/blog/' . $blogData['name'] . '/posts';
 $full_url = $url . '?api_key=' . $consumer;
-// $full_url .= '&npf=true';
+// $full_url .= '&include_pinned_posts=true'; // does not work, only accepted from redpop / mobile apps.
+$full_url .= '&npf=true';
 
 try {
    $response = wp_remote_get($full_url, array(
       'sslverify' => false,
       'headers' => array(
          'Content-Type' => 'application/json',
-         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       )
    ));
 
@@ -22,6 +22,8 @@ try {
       $data = json_decode(wp_remote_retrieve_body($response), true);
 
       if (isset($data['response']['posts']) && is_array($data['response']['posts'])) {
+         $converter = new Npf2Blocks();
+
          foreach ($data['response']['posts'] as $post) {
             // Define post content mapping
             $post_mapping = [
@@ -31,13 +33,14 @@ try {
             ];
 
             // Helper function to get post value with fallbacks
-            $get_post_value = function ($post, $keys, $default) {
+            $get_post_value = function ($post, $keys, $default) use ($converter) {
                foreach ($keys as $key) {
                   if (isset($post[$key])) {
                      $value = $post[$key];
                      // Handle array content (like NPF format)
                      if (is_array($value) && $key === 'content') {
-                        return json_encode($value);
+                        // Convert the array to a JSON string for the converter
+                        return $converter->convert(json_encode($post));
                      }
                      return $value;
                   }

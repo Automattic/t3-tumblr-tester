@@ -74,6 +74,7 @@ EOD;
 
                 ${readFile('update_options.php')}
                 ${readFile('clear_posts.php')}
+                ${readFile('redvelet.php')}
                 ${readFile('load_posts.php')}
             `
          },

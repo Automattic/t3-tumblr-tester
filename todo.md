@@ -1,18 +1,18 @@
+# Todo:
+- Fetch redvelet php file in blueprint step instead of local copy
+- Add option to switch between legacy and NPF
+- Add url params to set default blog and theme
 
-Bugs:
-Sometimes it does not load when switching theme
+# Bugs:
+- Sometimes it does not load when switching theme, you need to click the Switch button again
+- The Tumblr API does not have all data, we cannot completetly hydrate WP from it.
 
-Playwright:
+# Future:
+
+## Playwright:
 - Goes to tumblr test blog which includes test content
 - Sets custom theme to predefined theme HTML - stored locally
 - Takes screenshot
 - Spawns playground, setting it to the same theme, using that tumblr blog for content
 - Takes screenshot and compares
 - Produces test results
-
-Issues:
-The Tumblr API does not have all data, we cannot completetly hydrate WP from it.
-
-Future:
-Could use redvelvet converter rather than rendering as legacy
-Could use Tumblr Importer plugin instead of custom import for post content
