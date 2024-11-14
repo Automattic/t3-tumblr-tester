@@ -4,7 +4,6 @@
 - Add url params to set default blog and theme
 
 # Bugs:
-- Sometimes it does not load when switching theme, you need to click the Switch button again
 - The Tumblr API does not have all data, we cannot completetly hydrate WP from it.
 
 # Future:
