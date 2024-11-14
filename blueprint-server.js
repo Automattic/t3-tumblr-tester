@@ -62,9 +62,9 @@ export const generateBlueprint = (consumer, blogData, themeHtml, defaultParams) 
             "step": "runPHP",
             "code": `<?php
                 $consumer = '${consumer.key}';
-                $blogData = json_decode('${JSON.stringify(blogData)}', true);
-                $defaultParams = json_decode('${JSON.stringify(defaultParams)}', true);
-                $themeHtml = <<<'EOD'
+                $blog_data = json_decode('${JSON.stringify(blogData)}', true);
+                $default_params = json_decode('${JSON.stringify(defaultParams)}', true);
+                $theme_html = <<<'EOD'
 ${themeHtml}
 EOD;
                 require_once '/wordpress/wp-load.php';
@@ -72,10 +72,10 @@ EOD;
                 define('WP_DEBUG', true);
                 define('WP_DEBUG_LOG', true);
 
-                ${readFile('update_options.php')}
-                ${readFile('clear_posts.php')}
+                ${readFile('update-options.php')}
+                ${readFile('clear-posts.php')}
                 ${readFile('redvelet.php')}
-                ${readFile('load_posts.php')}
+                ${readFile('load-posts.php')}
             `
          },
       ]
