@@ -1,6 +1,6 @@
-async function getBlueprint(blogData) {
+async function getBlueprint(blogData, blogsThemeId) {
    const themeSelect = document.getElementById('themeSelect');
-   const themeId = themeSelect.value;
+   const themeId = blogsThemeId || themeSelect.value;
 
    const themeResponse = await fetch(`/theme/${themeId}`);
    const themeData = await themeResponse.json();
@@ -26,7 +26,9 @@ window.initPlayground = async function () {
 
       console.log('Initializing playground with blog data:', currentBlogData);
 
-      const blueprintData = await getBlueprint(currentBlogData);
+      console.log('Current theme ID:', currentThemeId);
+
+      const blueprintData = await getBlueprint(currentBlogData, currentThemeId);
 
       const client = await startPlaygroundWeb({
          iframe: document.getElementById('wp'),

@@ -1,5 +1,6 @@
 let currentBlogId = 'staff'; // Default value
 let currentBlogData = {};
+let currentThemeId = null;
 
 async function fetchThemeData(blogId) {
    try {
@@ -10,12 +11,19 @@ async function fetchThemeData(blogId) {
 
       currentBlogData = data.blog;
       currentBlogId = blogId;
+      currentThemeId = data.blog.theme_id;
+
+      console.log('Current theme ID:', currentThemeId);
+
+      // Populate dropdown with the blog's theme selected
+      await populateThemeDropdown(currentThemeId);
 
       // Initialize playground with the fetched theme
       initPlayground();
    } catch (error) {
       console.error(`Error fetching theme for ${blogId}:`, error);
       // Initialize playground anyway with default values
+      await populateThemeDropdown();
       initPlayground();
    }
 }
@@ -30,7 +38,7 @@ async function fetchCustomTheme(event) {
    return fetchThemeData(blogId);
 }
 
-async function populateThemeDropdown() {
+async function populateThemeDropdown(selectedThemeId = null) {
    try {
       const response = await fetch('/themes');
       const themes = await response.json();
@@ -38,22 +46,33 @@ async function populateThemeDropdown() {
       const themeSelect = document.getElementById('themeSelect');
       themeSelect.innerHTML = '';
 
-      // Find the official theme
-      const officialTheme = themes.find(theme => theme.title === 'Tumblr Official');
+      // If we have a selectedThemeId, fetch its details if it's not in the list
+      if (selectedThemeId && !themes.find(theme => theme.id === selectedThemeId)) {
+         try {
+            const themeResponse = await fetch(`/theme/${selectedThemeId}`);
+            const themeData = await themeResponse.json();
+            themes.unshift({
+               id: selectedThemeId,
+               title: themeData.title || `Theme ${selectedThemeId}`,
+               isCustom: true
+            });
+         } catch (error) {
+            console.error('Error fetching selected theme:', error);
+         }
+      }
 
       themes.forEach(theme => {
          const option = document.createElement('option');
          option.value = theme.id;
          option.textContent = theme.title;
-         // Select the official theme by default
-         if (theme.title === 'Tumblr Official') {
+         if (theme.id === selectedThemeId) {
             option.selected = true;
          }
          themeSelect.appendChild(option);
       });
 
-      // If no official theme was found, select the first option
-      if (!officialTheme && themeSelect.options.length > 0) {
+      // If no theme was selected, select the first option
+      if (!selectedThemeId && themeSelect.options.length > 0) {
          themeSelect.options[0].selected = true;
       }
    } catch (error) {
@@ -78,23 +97,41 @@ async function searchThemes(event) {
    const themeSelect = document.getElementById('themeSelect');
 
    if (searchTerm.length === 0) {
-      return populateThemeDropdown();
+      return populateThemeDropdown(currentThemeId);
    }
 
    try {
       const response = await fetch(`/themes?search=${encodeURIComponent(searchTerm)}`);
       const themes = await response.json();
 
-      themeSelect.innerHTML = ''; // Clear existing options
+      themeSelect.innerHTML = '';
+
+      // If the current theme isn't in search results but exists, add it
+      if (currentThemeId && !themes.find(theme => theme.id === currentThemeId)) {
+         try {
+            const themeResponse = await fetch(`/theme/${currentThemeId}`);
+            const themeData = await themeResponse.json();
+            themes.unshift({
+               id: currentThemeId,
+               title: themeData.title || `Theme ${currentThemeId}`,
+               isCustom: true
+            });
+         } catch (error) {
+            console.error('Error fetching current theme:', error);
+         }
+      }
 
       themes.forEach(theme => {
          const option = document.createElement('option');
          option.value = theme.id;
          option.textContent = theme.title;
+         if (theme.id === currentThemeId) {
+            option.selected = true;
+         }
          themeSelect.appendChild(option);
       });
 
-      if (themeSelect.options.length > 0) {
+      if (themeSelect.options.length > 0 && !themeSelect.value) {
          themeSelect.options[0].selected = true;
       }
    } catch (error) {
@@ -107,6 +144,6 @@ async function searchThemes(event) {
    }
 }
 
-// Call fetchInitialTheme instead of initPlayground directly
+// Initialize with empty theme ID
 populateThemeDropdown();
 fetchInitialTheme();
