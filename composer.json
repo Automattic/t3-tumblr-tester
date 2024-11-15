@@ -1,0 +1,42 @@
+{
+  "name": "cupcakelabs/t3-tumblr-tester",
+  "type": "wordpress-plugin",
+  "description": "A WordPress plugin that lets you run Tumblr Themes.",
+  "homepage": "https://github.com/Automattic/T3/",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Cupcake Labs",
+      "homepage": "https://cupcakelabs.wordpress.com/"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org",
+      "only": [
+        "wpackagist-plugin/*",
+        "wpackagist-theme/*"
+      ]
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "automattic/jetpack-codesniffer": "^4.0",
+    "johnpbloch/wordpress": "^6.6"
+  },
+  "scripts": {
+    "format:php": "phpcbf --standard=./.phpcs.xml --basepath=. --extensions=php . -v",
+    "lint:php": "phpcs --standard=./.phpcs.xml --basepath=. --extensions=php . -v -s"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/*": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "johnpbloch/wordpress-core-installer": true
+    }
+  }
+}
