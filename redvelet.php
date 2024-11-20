@@ -503,19 +503,42 @@ class Npf2Blocks {
 	 */
 	private function make_audio_block( array $block ): array {
 		return array(
-			'blockName'    => 'core/audio',
+			'blockName'    => 'tumblr3/extend-audio-block',
 			'attrs'        => array(
-				'src' => array(
-					array(
-						'type'   => $block['type'] ?? '',
-						'source' => $block['url'] ?? '',
-					),
-				),
+				'mediaURL'    => $block['url'] ?? '',
+				'mediaTitle'  => $block['title'] ?? '',
+				'mediaArtist' => $block['artist'] ?? '',
+				'mediaAlbum'  => $block['album'] ?? '',
+				'poster'      => isset( $block['poster'][0]['url'] ) ? $block['poster'][0]['url'] : '',
 			),
 			'innerBlocks'  => array(),
-			'innerHTML'    => '<figure class="wp-block-audio"><audio controls src="' . $block['url'] . '"></audio></figure>',
+			'innerHTML'    => '<figure class="tmblr-full">
+				<figcaption class="audio-caption">
+					<span class="tmblr-audio-meta audio-details">
+						<span class="tmblr-audio-meta title">' . htmlspecialchars( $block['title'] ) . '</span>
+						<span class="tmblr-audio-meta artist">' . htmlspecialchars( $block['artist'] ) . '</span>
+						<span class="tmblr-audio-meta album">' . htmlspecialchars( $block['album'] ) . '</span>
+					</span>
+					<img class="album-cover" src="' . htmlspecialchars( $block['poster'][0]['url'] ) . '" alt="image">
+				</figcaption>
+				<audio controls="controls">
+					<source src="' . htmlspecialchars( $block['url'] ) . '" type="audio/mpeg">
+				</audio>
+			</figure>',
 			'innerContent' => array(
-				'<figure class="wp-block-audio"><audio controls src="' . $block['url'] . '"></audio></figure>',
+				'<figure class="tmblr-full">
+					<figcaption class="audio-caption">
+						<span class="tmblr-audio-meta audio-details">
+							<span class="tmblr-audio-meta title">' . htmlspecialchars( $block['title'] ) . '</span>
+							<span class="tmblr-audio-meta artist">' . htmlspecialchars( $block['artist'] ) . '</span>
+							<span class="tmblr-audio-meta album">' . htmlspecialchars( $block['album'] ) . '</span>
+						</span>
+						<img class="album-cover" src="' . htmlspecialchars( $block['poster'][0]['url'] ) . '" alt="image">
+					</figcaption>
+					<audio controls="controls">
+						<source src="' . htmlspecialchars( $block['url'] ) . '" type="audio/mpeg">
+					</audio>
+				</figure>',
 			),
 		);
 	}
