@@ -49,13 +49,6 @@ export const generateBlueprint = (consumer, blogData, themeHtml, defaultParams) 
 				password: 'password',
 			},
 			{
-				step: 'setSiteOptions',
-				options: {
-					template: 'tumblr3',
-					stylesheet: 'tumblr3',
-				},
-			},
-			{
 				step: 'wp-cli',
 				command: `wp media import '${blogData.avatar?.[3]?.url}' --porcelain`,
 			},
