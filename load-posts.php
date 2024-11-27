@@ -17,6 +17,7 @@ global $consumer;
 $url       = 'https://api.tumblr.com/v2/blog/' . $blog_data['name'] . '/posts';
 $full_url  = $url . '?api_key=' . $consumer;
 $full_url .= '&npf=true';
+$full_url .= '&include_pinned_posts=true';
 
 try {
 	$response = wp_remote_get(
@@ -71,7 +72,11 @@ try {
 					'post_type'    => 'post',
 				);
 
-				wp_insert_post( $wp_post );
+				$post_id = wp_insert_post( $wp_post );
+
+				if ( $npf_post['is_pinned'] && $post_id && ! is_wp_error( $post_id ) ) {
+					stick_post( $post_id );
+				}
 			}
 		}
 	}
