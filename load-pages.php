@@ -19,7 +19,7 @@ try {
 			$wp_page = array(
 				'post_title'    => sanitize_text_field( $tumblr_page['title'] ),
 				'post_content'  => wp_kses_post( $tumblr_page['content'] ),
-				'post_status'   => 'publish',
+				'post_status'   => $tumblr_page['show_link'] ? 'publish' : 'draft',
 				'post_type'     => 'page',
 				'post_author'   => 1,
 				'menu_order'    => isset( $tumblr_page['position'] ) ? intval( $tumblr_page['position'] ) : 0,
