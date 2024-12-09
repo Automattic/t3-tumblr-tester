@@ -5,6 +5,7 @@
  * @package T3 Tumblr Tester
  */
 
+// Get all posts and pages
 $all_posts = get_posts(
 	array(
 		'numberposts' => -1,
@@ -13,6 +14,12 @@ $all_posts = get_posts(
 	)
 );
 
+$deleted_count = 0;
+
 foreach ( $all_posts as $single_post ) {
-	wp_delete_post( $single_post->ID, true );
+	if ( wp_delete_post( $single_post->ID, true ) ) {
+		++$deleted_count;
+	}
 }
+
+printf( 'Deleted %d posts and pages.', $deleted_count );

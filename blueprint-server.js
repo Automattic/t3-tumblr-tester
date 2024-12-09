@@ -14,7 +14,7 @@ const readFile = filename => {
 	return content;
 };
 
-export const generateBlueprint = (consumer, blogData, themeHtml, defaultParams) => {
+export const generateBlueprint = (credentials, blogData, themeHtml, defaultParams, pages) => {
 	return {
 		$schema: 'https://playground.wordpress.net/blueprint-schema.json',
 		preferredVersions: {
@@ -40,7 +40,7 @@ export const generateBlueprint = (consumer, blogData, themeHtml, defaultParams) 
 				step: 'installPlugin',
 				pluginData: {
 					resource: 'url',
-					url: 'https://github-proxy.com/proxy/?repo=Automattic/tumblr-theme-translator&release=v0.1.10&asset=tumblr-theme-translator.zip',
+					url: 'https://github-proxy.com/proxy/?repo=Automattic/tumblr-theme-translator&release=v0.1.11&asset=tumblr-theme-translator.zip',
 				},
 			},
 			{
@@ -55,22 +55,25 @@ export const generateBlueprint = (consumer, blogData, themeHtml, defaultParams) 
 			{
 				step: 'runPHP',
 				code: `<?php
-                $consumer = '${consumer.key}';
-                $blog_data = json_decode('${JSON.stringify(blogData)}', true);
-                $default_params = json_decode('${JSON.stringify(defaultParams)}', true);
-                $theme_html = <<<'EOD'
+					require '/wordpress/wp-load.php';
+					$consumer = json_decode('${JSON.stringify({
+						key: credentials.key,
+						secret: credentials.secret,
+						access: credentials.access_token,
+					})}', true);
+					$api_key = '${credentials.key}';
+					$blog_data = json_decode('${JSON.stringify(blogData)}', true);
+					$default_params = json_decode('${JSON.stringify(defaultParams)}', true);
+					$pages = json_decode('${JSON.stringify(pages)}', true);
+					$theme_html = <<<'EOD'
 ${themeHtml}
 EOD;
-                require_once '/wordpress/wp-load.php';
-
-                define('WP_DEBUG', true);
-                define('WP_DEBUG_LOG', true);
-
-                ${readFile('update-options.php')}
-                ${readFile('clear-posts.php')}
-                ${readFile('redvelet.php')}
-                ${readFile('load-posts.php')}
-            `,
+					${readFile('update-options.php')}
+					${readFile('clear-posts.php')}
+					${readFile('redvelet.php')}
+					${readFile('load-posts.php')}
+					${readFile('load-pages.php')}
+				`,
 			},
 		],
 	};

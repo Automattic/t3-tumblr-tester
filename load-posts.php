@@ -12,10 +12,10 @@ define( 'WP_DEBUG_LOG', true );
 
 // Global vars from JS.
 global $blog_data;
-global $consumer;
+global $api_key;
 
 $url       = 'https://api.tumblr.com/v2/blog/' . $blog_data['name'] . '/posts';
-$full_url  = $url . '?api_key=' . $consumer;
+$full_url  = $url . '?api_key=' . $api_key;
 $full_url .= '&npf=true';
 $full_url .= '&include_pinned_posts=true';
 
