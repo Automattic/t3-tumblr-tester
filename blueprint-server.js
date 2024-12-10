@@ -40,7 +40,7 @@ export const generateBlueprint = (credentials, blogData, themeHtml, defaultParam
 				step: 'installPlugin',
 				pluginData: {
 					resource: 'url',
-					url: 'https://github-proxy.com/proxy/?repo=Automattic/tumblr-theme-translator&release=v0.1.11&asset=tumblr-theme-translator.zip',
+					url: 'https://github-proxy.com/proxy/?repo=Automattic/tumblr-theme-translator&release=v0.1.12&asset=tumblr-theme-translator.zip',
 				},
 			},
 			{
@@ -70,7 +70,6 @@ ${themeHtml}
 EOD;
 					${readFile('update-options.php')}
 					${readFile('clear-posts.php')}
-					${readFile('redvelet.php')}
 					${readFile('load-posts.php')}
 					${readFile('load-pages.php')}
 				`,

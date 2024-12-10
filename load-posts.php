@@ -34,7 +34,7 @@ try {
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( isset( $data['response']['posts'] ) && is_array( $data['response']['posts'] ) ) {
-			$converter = new Npf2Blocks();
+			$converter = new CupcakeLabs\RedVelvet\Converter\Npf2Blocks();
 
 			foreach ( $data['response']['posts'] as $npf_post ) {
 				// Define post content mapping
