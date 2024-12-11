@@ -18,7 +18,7 @@ See [todo.md](todo.md) for future plans.
 
 ## oAuth Setup:
 
-You most likely do not need to setup oAuth, the API Key is enough for most cases. oAuth is currently used for fetching a blogs custom theme, however that also requires connecting to a devbox. Adding instructions here in case you need it.
+You most likely do not need to setup oAuth, the API Key is enough for most cases. oAuth is currently used for fetching a blogs custom theme, however that also requires connecting to a devbox as the custom-theme endpoint is restricted to devbox's only (this will likely change). Adding instructions here in case you need it.
 
 1. Start the server (see Running section)
 2. Go to http://localhost:3000/auth/tumblr
